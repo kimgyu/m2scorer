@@ -4,6 +4,9 @@
 **OR CHECK OUT THE RELEASES: https://github.com/nusnlp/m2scorer/releases**  
 ****************************************************************************************************
 
+## 추가사항
+-- test option gives verbose output about gold edit and system setnences that lowers f-score
+
 ## M^2Scorer 
 
 This is the scorer for evaluation of grammatical error correction systems. 
