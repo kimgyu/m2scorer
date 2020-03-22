@@ -99,9 +99,10 @@ def print_usage():
 max_unchanged_words=2
 beta = 0.5
 ignore_whitespace_casing= False
+test = False
 verbose = False
 very_verbose = False
-opts, args = getopt(sys.argv[1:], "v", ["max_unchanged_words=", "beta=", "verbose", "ignore_whitespace_casing", "very_verbose"])
+opts, args = getopt(sys.argv[1:], "v", ["max_unchanged_words=", "beta=", "verbose", "ignore_whitespace_casing", "very_verbose", "test"])
 for o, v in opts:
     if o in ('-v', '--verbose'):
         verbose = True
@@ -113,6 +114,8 @@ for o, v in opts:
         beta = float(v)
     elif o == '--ignore_whitespace_casing':
         ignore_whitespace_casing = True
+    elif o in ('-t', '--test'):
+        test = True
     else:
         print >> sys.stderr, "Unknown option :", o
         print_usage()
@@ -134,7 +137,7 @@ fin = smart_open(system_file, 'r')
 system_sentences = [line.decode("utf8").strip() for line in fin.readlines()]
 fin.close()
 
-p, r, f1 = levenshtein.batch_multi_pre_rec_f1(system_sentences, source_sentences, gold_edits, max_unchanged_words, beta, ignore_whitespace_casing, verbose, very_verbose)
+p, r, f1 = levenshtein.batch_multi_pre_rec_f1(system_sentences, source_sentences, gold_edits, max_unchanged_words, beta, ignore_whitespace_casing, verbose, very_verbose, test)
 
 print "Precision   : %.4f" % p
 print "Recall      : %.4f" % r

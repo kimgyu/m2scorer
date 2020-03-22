@@ -99,12 +99,14 @@ def f1_suffstats(candidate, source, gold_edits, max_unchanged_words=2, ignore_wh
         print "-------------------------------------------"
     return (stat_correct, stat_proposed, stat_gold)
 
-def batch_multi_pre_rec_f1(candidates, sources, gold_edits, max_unchanged_words=2, beta=0.5, ignore_whitespace_casing= False, verbose=False, very_verbose=False):
+def batch_multi_pre_rec_f1(candidates, sources, gold_edits, max_unchanged_words=2, beta=0.5, ignore_whitespace_casing= False, verbose=False, very_verbose=False, test=False):
     assert len(candidates) == len(sources) == len(gold_edits)
     stat_correct = 0.0
     stat_proposed = 0.0
     stat_gold = 0.0
     i = 0
+    f1_prev = 0.0
+
     for candidate, source, golds_set in zip(candidates, sources, gold_edits):
         i = i + 1
         # Candidate system edit extraction
@@ -138,6 +140,7 @@ def batch_multi_pre_rec_f1(candidates, sources, gold_edits, max_unchanged_words=
         max_stat_correct = -1.0
         min_stat_proposed = float("inf")
         min_stat_gold = float("inf")
+
         for annotator, gold in golds_set.iteritems():
             localdist = set_weights(E, dist, edits, gold, verbose, very_verbose)
             editSeq = best_edit_seq_bf(V, E, localdist, edits, very_verbose)
@@ -174,6 +177,24 @@ def batch_multi_pre_rec_f1(candidates, sources, gold_edits, max_unchanged_words=
                 argmax_proposed = len(editSeq)
                 argmax_gold = len(gold)
 
+            if test and f1_prev > f1_local:
+                # print source.encode("utf8")
+                print "f_prev        :", f1_prev
+                print "SOURCE        :", source.encode("utf8")
+                print "HYPOTHESIS    :", candidate.encode("utf8")
+                print "EDIT SEQ      :", [shrinkEdit(ed) for ed in list(reversed(editSeq))]
+                print "GOLD EDITS    :", gold
+                print "CORRECT EDITS :", correct
+                print "# correct     :", int(stat_correct_local)
+                print "# proposed    :", int(stat_proposed_local)
+                print "# gold        :", int(stat_gold_local)
+                print "precision     :", p_local
+                print "recall        :", r_local
+                print "f_%.1f         :" % beta, f1_local
+                print "-------------------------------------------"
+            # to find wrong proposes
+            f1_prev = f1_local
+
             if verbose:
                 print "SOURCE        :", source.encode("utf8")
                 print "HYPOTHESIS    :", candidate.encode("utf8")
@@ -187,12 +208,15 @@ def batch_multi_pre_rec_f1(candidates, sources, gold_edits, max_unchanged_words=
                 print "recall        :", r_local
                 print "f_%.1f         :" % beta, f1_local
                 print "-------------------------------------------"
+
+
         if verbose:
             print ">> Chosen Annotator for line", i, ":", chosen_ann
             print ""
         stat_correct += argmax_correct
         stat_proposed += argmax_proposed
         stat_gold += argmax_gold
+
 
     try:
         p  = stat_correct / stat_proposed
